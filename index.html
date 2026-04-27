@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Index</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0a;
+      --text: #f0f0f0;
+      --muted: #555;
+      --dim: #333;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', Helvetica, Arial, sans-serif;
+      font-weight: 300;
+      -webkit-font-smoothing: antialiased;
+      padding: 72px 40px 100px;
+      max-width: 480px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    h1 {
+      font-size: clamp(52px, 13vw, 72px);
+      font-weight: 300;
+      letter-spacing: -0.01em;
+      line-height: 1;
+      margin-bottom: 52px;
+    }
+
+    /* Projects nav */
+    nav { display: flex; flex-direction: column; }
+
+    a.item {
+      display: flex; align-items: center;
+      padding: 10px 0; text-decoration: none; color: var(--text);
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.2s ease, opacity 0.2s ease;
+    }
+    a.item:active { opacity: 0.5; }
+    @media (hover: hover) { a.item:hover { border-bottom-color: var(--muted); } }
+
+    .label {
+      font-size: clamp(26px, 7vw, 36px);
+      font-weight: 300; letter-spacing: -0.01em; line-height: 1;
+    }
+
+    /* Tools section */
+    .tools-section { margin-top: 64px; }
+
+    .tools-header {
+      display: flex; align-items: baseline;
+      justify-content: space-between; margin-bottom: 32px;
+    }
+
+    h2 {
+      font-size: clamp(52px, 13vw, 72px);
+      font-weight: 300; letter-spacing: -0.01em; line-height: 1;
+    }
+
+    #edit-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--muted); font-family: inherit; font-weight: 300;
+      font-size: 14px; letter-spacing: 0.04em;
+      padding: 4px 0; transition: color 0.2s ease;
+    }
+    #edit-btn:hover { color: var(--text); }
+    #edit-btn.active { color: var(--text); }
+
+    /* Tool rows */
+    #tools-list { display: flex; flex-direction: column; }
+
+    .tool-row {
+      display: flex; align-items: center;
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.15s ease;
+      user-select: none;
+    }
+
+    .tool-row a {
+      flex: 1;
+      font-size: clamp(22px, 6vw, 30px);
+      font-weight: 300; text-decoration: none;
+      color: var(--text); padding: 10px 0;
+      transition: opacity 0.2s ease;
+    }
+    .tool-row a:active { opacity: 0.5; }
+    @media (hover: hover) { .tool-row:hover a { opacity: 0.7; } }
+
+    .drag-handle, .remove-btn, .move-btns {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+    body.editing .drag-handle,
+    body.editing .remove-btn,
+    body.editing .move-btns { display: flex; }
+
+    .drag-handle {
+      cursor: grab;
+      padding: 10px 14px 10px 0;
+      font-size: 16px;
+      touch-action: none;
+      opacity: 0.5;
+    }
+    .drag-handle:active { cursor: grabbing; }
+
+    .move-btns { flex-direction: column; padding: 4px 0 4px 10px; }
+    .move-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--muted); font-size: 11px; padding: 3px 6px;
+      transition: color 0.15s ease; line-height: 1;
+    }
+    .move-btn:hover { color: var(--text); }
+    .move-btn:disabled { opacity: 0.15; cursor: default; }
+
+    .remove-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--muted); font-size: 22px; line-height: 1;
+      padding: 10px 0 10px 10px;
+      transition: color 0.15s ease;
+    }
+    .remove-btn:hover { color: #e05a5a; }
+
+    .tool-row.dragging { opacity: 0.35; }
+    .tool-row.drag-over { border-bottom-color: var(--text); }
+
+    /* Add form */
+    #add-tool-form {
+      display: none;
+      flex-direction: column;
+      gap: 14px;
+      margin-top: 28px;
+      padding-top: 28px;
+      border-top: 1px solid var(--dim);
+    }
+    body.editing #add-tool-form { display: flex; }
+
+    .form-label {
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 4px;
+      display: block;
+    }
+
+    .form-input {
+      background: none; border: none;
+      border-bottom: 1px solid var(--dim);
+      color: var(--text);
+      font-family: inherit; font-weight: 300;
+      font-size: clamp(18px, 5vw, 24px);
+      padding: 8px 0; outline: none;
+      transition: border-color 0.2s ease;
+      width: 100%;
+    }
+    .form-input::placeholder { color: var(--muted); }
+    .form-input:focus { border-bottom-color: var(--text); }
+
+    #add-btn {
+      align-self: flex-start;
+      background: none;
+      border: 1px solid var(--dim);
+      border-radius: 2px;
+      color: var(--text);
+      cursor: pointer;
+      font-family: inherit; font-weight: 300;
+      font-size: 14px; letter-spacing: 0.04em;
+      padding: 8px 20px; margin-top: 4px;
+      transition: border-color 0.2s ease;
+    }
+    #add-btn:hover { border-color: var(--text); }
+  </style>
+</head>
+<body>
+
+  <h1>index</h1>
+
+  <nav>
+    <a class="item" href="https://dollmarc.github.io/surf/" target="_blank" rel="noopener">
+      <span class="label">surf</span>
+    </a>
+    <a class="item" href="https://dollmarc.github.io/foundations/" target="_blank" rel="noopener">
+      <span class="label">foundations</span>
+    </a>
+    <a class="item" href="https://dollmarc.github.io/stretch/" target="_blank" rel="noopener">
+      <span class="label">stretch</span>
+    </a>
+    <a class="item" href="https://dollmarc.github.io/prompt-library/" target="_blank" rel="noopener">
+      <span class="label">prompt library</span>
+    </a>
+    <a class="item" href="https://dollmarc.github.io/design-system/" target="_blank" rel="noopener">
+      <span class="label">design system</span>
+    </a>
+  </nav>
+
+  <section class="tools-section">
+    <div class="tools-header">
+      <h2>tools</h2>
+      <button id="edit-btn">edit</button>
+    </div>
+
+    <div id="tools-list"></div>
+
+    <div id="add-tool-form">
+      <div>
+        <label class="form-label" for="input-name">name</label>
+        <input class="form-input" id="input-name" type="text" placeholder="e.g. figma" autocomplete="off">
+      </div>
+      <div>
+        <label class="form-label" for="input-url">url</label>
+        <input class="form-input" id="input-url" type="url" placeholder="https://" autocomplete="off">
+      </div>
+      <button id="add-btn">add tool</button>
+    </div>
+  </section>
+
+  <script>
+    const STORAGE_KEY = 'tools-v2';
+
+    const defaults = [
+      { name: 'claude',     url: 'https://claude.ai' },
+      { name: 'copilot',    url: 'https://copilot.microsoft.com' },
+      { name: 'chatGPT',    url: 'https://chatgpt.com' },
+      { name: 'cursor',     url: 'https://cursor.sh' },
+      { name: 'replit',     url: 'https://replit.com' },
+      { name: 'lovable',    url: 'https://lovable.dev' },
+      { name: 'stitch',     url: 'https://stitch.withgoogle.com' },
+      { name: 'impeccable', url: 'https://impeccable.app' },
+      { name: 'pencil',     url: 'https://www.apple.com/apple-pencil/' },
+      { name: 'paper',      url: 'https://www.apple.com/shop/buy-ipad/ipad-accessories/apple-pencil' },
+      { name: 'github',     url: 'https://github.com/dollmarc' },
+    ];
+
+    let tools = load();
+    let editing = false;
+    let dragSrc = null;
+
+    const listEl    = document.getElementById('tools-list');
+    const editBtn   = document.getElementById('edit-btn');
+    const addBtn    = document.getElementById('add-btn');
+    const inputName = document.getElementById('input-name');
+    const inputUrl  = document.getElementById('input-url');
+
+    function load() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        return Array.isArray(saved) && saved.length ? saved : [...defaults];
+      } catch { return [...defaults]; }
+    }
+
+    function save() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tools));
+    }
+
+    function render() {
+      listEl.innerHTML = '';
+      tools.forEach((tool, i) => {
+        const row = document.createElement('div');
+        row.className = 'tool-row';
+        row.draggable = true;
+        row.dataset.index = i;
+
+        const handle = document.createElement('span');
+        handle.className = 'drag-handle';
+        handle.textContent = '⠿';
+        handle.title = 'drag to reorder';
+
+        const a = document.createElement('a');
+        a.href = tool.url;
+        a.target = '_blank';
+        a.rel = 'noopener';
+        a.textContent = tool.name;
+        a.addEventListener('click', e => { if (editing) e.preventDefault(); });
+
+        const moveBtns = document.createElement('div');
+        moveBtns.className = 'move-btns';
+
+        const upBtn = document.createElement('button');
+        upBtn.className = 'move-btn';
+        upBtn.textContent = '▲';
+        upBtn.disabled = i === 0;
+        upBtn.addEventListener('click', () => move(i, i - 1));
+
+        const downBtn = document.createElement('button');
+        downBtn.className = 'move-btn';
+        downBtn.textContent = '▼';
+        downBtn.disabled = i === tools.length - 1;
+        downBtn.addEventListener('click', () => move(i, i + 1));
+
+        moveBtns.append(upBtn, downBtn);
+
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'remove-btn';
+        removeBtn.textContent = '×';
+        removeBtn.addEventListener('click', () => remove(i));
+
+        row.append(handle, a, moveBtns, removeBtn);
+
+        row.addEventListener('dragstart', e => {
+          dragSrc = i;
+          setTimeout(() => row.classList.add('dragging'), 0);
+          e.dataTransfer.effectAllowed = 'move';
+        });
+        row.addEventListener('dragend', () => {
+          row.classList.remove('dragging');
+          listEl.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+        });
+        row.addEventListener('dragover', e => {
+          if (!editing) return;
+          e.preventDefault();
+          listEl.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+          row.classList.add('drag-over');
+        });
+        row.addEventListener('drop', e => {
+          e.preventDefault();
+          const dest = parseInt(row.dataset.index);
+          if (dragSrc !== null && dragSrc !== dest) {
+            const [moved] = tools.splice(dragSrc, 1);
+            tools.splice(dest, 0, moved);
+            dragSrc = null;
+            save(); render();
+          }
+        });
+
+        let touchStartY = 0;
+        handle.addEventListener('touchstart', e => {
+          touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+        handle.addEventListener('touchend', e => {
+          const dy = e.changedTouches[0].clientY - touchStartY;
+          const idx = parseInt(row.dataset.index);
+          if (dy < -30 && idx > 0) move(idx, idx - 1);
+          else if (dy > 30 && idx < tools.length - 1) move(idx, idx + 1);
+        });
+
+        listEl.appendChild(row);
+      });
+    }
+
+    function move(from, to) {
+      const [item] = tools.splice(from, 1);
+      tools.splice(to, 0, item);
+      save(); render();
+    }
+
+    function remove(i) {
+      tools.splice(i, 1);
+      save(); render();
+    }
+
+    editBtn.addEventListener('click', () => {
+      editing = !editing;
+      document.body.classList.toggle('editing', editing);
+      editBtn.textContent = editing ? 'done' : 'edit';
+      editBtn.classList.toggle('active', editing);
+      if (!editing) { inputName.value = ''; inputUrl.value = ''; }
+    });
+
+    addBtn.addEventListener('click', () => {
+      const name = inputName.value.trim();
+      let url = inputUrl.value.trim();
+      if (!name || !url) return;
+      if (!url.startsWith('http')) url = 'https://' + url;
+      tools.push({ name, url });
+      save(); render();
+      inputName.value = '';
+      inputUrl.value = '';
+      inputName.focus();
+    });
+
+    inputUrl.addEventListener('keydown', e => { if (e.key === 'Enter') addBtn.click(); });
+
+    render();
+  </script>
+</body>
+</html>
